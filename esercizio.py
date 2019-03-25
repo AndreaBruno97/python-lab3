@@ -1,6 +1,4 @@
 from telegram.ext import Updater, Filters, CommandHandler, MessageHandler
-from telegram import ChatAction
-from gtts import gTTS
 
 def apri(file,lista):
     f1 = open(file, "r")
@@ -12,34 +10,46 @@ def chiudi(file, lista):
         f2.write(task + "\n")
 
 def start(bot, update):
-    update.message.reply_text("Ciao!")
+    update.message.reply_text("Hello!")
 
-def start(bot, update):
-        update.message.reply_text("Ciao!")
+def showTasks(bot, update, lista):
+    if len(lista)==0:
+        update.message.reply_text("Nothing to do, here!")
+    else:
+        update.message.reply_text(lista)
 
-def showTasks(bot, update):
-        update.message.reply_text("Ciao!")
+def newTask(bot, update, lista, args):
+    new=" ".join(args)
+    lista.append(new)
+    update.message.reply_text("Task added")
 
-def newTask(bot, update):
-    update.message.reply_text("Ciao!")
+def removeTask(bot, update, lista, args):
+    old=" ".join(args)
+    if old in lista:
+        lista.remove(old)
+        update.message.reply_text("Element removed")
+    else:
+        update.message.reply_text("No such element")
 
-def removeTask(bot, update):
-    update.message.reply_text("Ciao!")
-
-def removeAllTasks(bot, update):
-    update.message.reply_text("Ciao!")
-
-"""
-def tts(bot, update):
-    chat_id = update.message.chat_id
-    bot.sendChatAction(chat_id, ChatAction.UPLOAD_AUDIO)
-
-    testo=update.message.text
-    tts=gTTS(text=testo, lang="it")
-    tts.save("audio_file.mp3")
-    voce=open("audio_file.mp3", "rb")
-    bot.sendVoice(chat_id=chat_id, voice=voce)
-"""
+def removeAllTasks(bot, update, lista, args):
+    sub=" ".join(args)
+    lung=len(lista)
+    eliminati=0
+    messaggio="The elements "
+    i = 0
+    while i < lung:
+        if lista[i].find(sub) >= 0:
+            eliminati+=1
+            messaggio = messaggio + "\"" + lista[i] + "\" "
+            del lista[i]
+            i -= 1
+            lung -= 1
+        i += 1
+    messaggio = messaggio + "were removed"
+    if eliminati == 0:
+        update.message.reply_text("No element removed")
+    else:
+        update.message.reply_text(messaggio)
 
 def main():
     file = "task_list.txt"
@@ -48,10 +58,10 @@ def main():
     updater=Updater("850353488:AAFBgFTZ-DkxbBhmVg0doE52z7nVTF9yY4c")
     dp=updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("showTasks", start))
-    dp.add_handler(CommandHandler("newTask", start))
-    dp.add_handler(CommandHandler("removeTask", start))
-    dp.add_handler(CommandHandler("removeAllTasks", start))
+    dp.add_handler(CommandHandler("showTasks", showTasks))
+    dp.add_handler(CommandHandler("newTask", newTask, pass_args=True))
+    dp.add_handler(CommandHandler("removeTask", removeTask, pass_args=True))
+    dp.add_handler(CommandHandler("removeAllTasks", removeAllTasks, pass_args=True))
 
     updater.start_polling()
 
